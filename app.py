@@ -11,16 +11,16 @@ AIRTABLE_URL = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_
 
 # 🔹 Function to save form data in Airtable
 def save_to_airtable(email, name, phone):
-    """Saves email, first name, and phone number to Airtable."""
+    """Saves email, name, and phone number to Airtable."""
     headers = {
         "Authorization": f"Bearer {AIRTABLE_API_KEY}",
         "Content-Type": "application/json"
     }
     data = {
         "fields": {
-            "email": email,
-            "name": name,  # Make sure this matches the Airtable field name
-            "phone": phone       # Make sure this matches the Airtable field name
+            "email": email,  # Ensure this matches the Airtable field name
+            "name": name,    # Ensure this matches the Airtable field name
+            "phone": phone   # Ensure this matches the Airtable field name
         }
     }
     try:
@@ -41,19 +41,20 @@ def receive_form_data():
 
         # Ensure JSON is received correctly
         data = request.get_json()
-
         if not data:
             return jsonify({"error": "No data received"}), 400
 
-        # Extract email, first name, and phone from nested JSON
+        # Extract email, name & phone from JSON
         contact_info = data.get("data", {}).get("contact", {})
-        email = contact_info.get("email")
-        name = contact_info.get("surname")  # Assuming the key is "first_name"
-        phone = contact_info.get("phone_number")  # Assuming the key is "phone"
+        fields = contact_info.get("fields", {})
+
+        email = contact_info.get("email")  # Extract email
+        name = fields.get("surname")       # Extract "surname" from fields as name
+        phone = fields.get("phone_number") # Extract "phone_number" from fields as phone
 
         # Validate required fields
         if not email or not name or not phone:
-            return jsonify({"error": "Email, First Name, and Phone are required"}), 400  
+            return jsonify({"error": "Email, Name, and Phone are required"}), 400  
 
         # Store data in Airtable
         response = save_to_airtable(email, name, phone)
