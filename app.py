@@ -32,7 +32,7 @@ def save_to_airtable(name, email):
         return {"error": str(e)}
 
 # 🔹 API Route to Receive Appointment Data
-@app.route("/appointment", methods=["POST"])
+@app.route("/appointment", methods=["POST", "GET"])
 def receive_appointment_data():
     """Receives appointment data from Systeme.io and saves to Airtable."""
     try:
