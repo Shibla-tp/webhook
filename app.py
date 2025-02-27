@@ -31,37 +31,33 @@ def save_to_airtable(name, email):
         print(f"Airtable API error: {e}")
         return {"error": str(e)}
 
-# 🔹 API Route to Receive Appointment Data
-@app.route("/appointment", methods=["POST", "GET"])
+@app.route("/appointment", methods=["POST"])
 def receive_appointment_data():
-    """Receives appointment data from Systeme.io and saves to Airtable."""
     try:
-        print(f"Request method: {request.method}")  
         print(f"Request headers: {request.headers}")  
-        print(f"Raw request data: {request.data.decode('utf-8')}")  # Decode raw data for debugging
+        print(f"Raw request data: {request.data.decode('utf-8')}")  
 
-        # Parse JSON payload
-        data = request.get_json()
+        # Detect JSON or Form Data
+        if request.is_json:
+            data = request.get_json()
+        else:
+            import json
+            data = json.loads(request.data.decode("utf-8"))
+
         if not data:
             return jsonify({"error": "No data received"}), 400
 
-        # Extract name & email from Systeme.io payload
-        contact_info = data.get("data", {}).get("contact", {})  # Get contact details
-        name = contact_info.get("first_name", "")  # Use "first_name" from Systeme.io
+        # Extract name & email
+        contact_info = data.get("data", {}).get("contact", {})
+        name = contact_info.get("first_name", "")
         email = contact_info.get("email", "")
 
-        # Validate required fields
         if not name or not email:
             return jsonify({"error": "Name and Email are required"}), 400  
 
-        # Store data in Airtable
         response = save_to_airtable(name, email)
-
         return jsonify({"message": "Booking saved successfully", "airtable_response": response}), 200  
 
     except Exception as e:
         print(f"Error processing request: {e}")  
         return jsonify({"error": str(e)}), 500  
-
-if __name__ == '__main__':
-    app.run(debug=True)  # ✅ Start Flask in debug mode
