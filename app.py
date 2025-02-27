@@ -48,8 +48,8 @@ def receive_form_data():
         # Extract email, first name, and phone from nested JSON
         contact_info = data.get("data", {}).get("contact", {})
         email = contact_info.get("email")
-        name = contact_info.get("name")  # Assuming the key is "first_name"
-        phone = contact_info.get("phone")  # Assuming the key is "phone"
+        name = contact_info.get("surname")  # Assuming the key is "first_name"
+        phone = contact_info.get("phone_number")  # Assuming the key is "phone"
 
         # Validate required fields
         if not email or not name or not phone:
