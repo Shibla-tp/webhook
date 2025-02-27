@@ -29,7 +29,7 @@ def save_to_airtable(email):
         return {"error": str(e)}
 
 # 🔹 API Route to Receive Form Data
-@app.route("/submit", methods=["POST"])
+@app.route("/submit", methods=["GET", "POST"])
 def receive_form_data():
     try:
         print(f"Request method: {request.method}")  
