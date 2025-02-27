@@ -29,32 +29,34 @@ def save_to_airtable(email):
         return {"error": str(e)}
 
 # 🔹 API Route to Receive Form Data
-@app.route("/submit", methods=["GET", "POST"])  # ✅ Allow both methods for debugging
+@app.route("/submit", methods=["POST"])
 def receive_form_data():
-    """Receives form data from Systeme.io, extracts the email, and saves it to Airtable."""
     try:
-        print(f"Request method: {request.method}")  # ✅ Log request method
-        print(f"Request headers: {request.headers}")  # ✅ Log request headers
-        print(f"Request data: {request.data}")  # ✅ Log raw request body
+        print(f"Request method: {request.method}")  
+        print(f"Request headers: {request.headers}")  
+        print(f"Raw request data: {request.data}")  
 
-        # Support both JSON and form-encoded data
-        data = request.get_json() or request.form  
+        # Ensure JSON is received correctly
+        data = request.get_json()
 
-        email = data.get("email")  
+        if not data:
+            return jsonify({"error": "No data received"}), 400
+
+        # Extract email from nested JSON
+        email = data.get("data", {}).get("contact", {}).get("email")
+
         if not email:
             return jsonify({"error": "Email is required"}), 400  
 
         # Store email in Airtable
         response = save_to_airtable(email)
 
-        if "error" in response:
-            return jsonify({"error": f"Failed to save email to Airtable: {response['error']}"}), 500
-
         return jsonify({"message": "Email saved successfully", "airtable_response": response}), 200  
 
     except Exception as e:
-        print(f"Error processing webhook: {e}")  
+        print(f"Error processing request: {e}")  
         return jsonify({"error": str(e)}), 500  
+
 
 if __name__ == '__main__':
     app.run(debug=True)  # ✅ Start Flask in debug mode
