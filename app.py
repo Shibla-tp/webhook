@@ -17,7 +17,7 @@ def save_to_airtable(email):
     }
     data = {
         "fields": {
-            "Email": email  # Ensure this matches the field name in Airtable
+            "email": email  # Ensure this matches the field name in Airtable
         }
     }
     try:
