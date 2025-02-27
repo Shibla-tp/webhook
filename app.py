@@ -9,22 +9,23 @@ AIRTABLE_BASE_ID = "app5s8zl7DsUaDmtx"
 AIRTABLE_TABLE_NAME = "landing_page_details"
 AIRTABLE_URL = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
 
-# 🔹 Function to save First Name & Phone to Airtable
-def save_to_airtable(first_name, phone):
-    """Saves first name and phone number to Airtable."""
+# 🔹 Function to save form data in Airtable
+def save_to_airtable(email, name, phone):
+    """Saves email, first name, and phone number to Airtable."""
     headers = {
         "Authorization": f"Bearer {AIRTABLE_API_KEY}",
         "Content-Type": "application/json"
     }
     data = {
         "fields": {
-            "name": first_name,  # Ensure this matches the Airtable field name
-            "phone": phone       # Ensure this matches the Airtable field name
+            "email": email,
+            "name": name,  # Make sure this matches the Airtable field name
+            "phone": phone       # Make sure this matches the Airtable field name
         }
     }
     try:
         response = requests.post(AIRTABLE_URL, json=data, headers=headers)
-        response.raise_for_status()  # Raise error if request fails
+        response.raise_for_status()  # Raise an error if the request fails
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Airtable API error: {e}")
@@ -44,17 +45,18 @@ def receive_form_data():
         if not data:
             return jsonify({"error": "No data received"}), 400
 
-        # Extract first name & phone from JSON
+        # Extract email, first name, and phone from nested JSON
         contact_info = data.get("data", {}).get("contact", {})
-        first_name = contact_info.get("first_name")  # Assuming the key is "first_name"
+        email = contact_info.get("email")
+        name = contact_info.get("name")  # Assuming the key is "first_name"
         phone = contact_info.get("phone")  # Assuming the key is "phone"
 
         # Validate required fields
-        if not first_name or not phone:
-            return jsonify({"error": "First Name and Phone are required"}), 400  
+        if not email or not name or not phone:
+            return jsonify({"error": "Email, First Name, and Phone are required"}), 400  
 
         # Store data in Airtable
-        response = save_to_airtable(first_name, phone)
+        response = save_to_airtable(email, name, phone)
 
         return jsonify({"message": "Data saved successfully", "airtable_response": response}), 200  
 
