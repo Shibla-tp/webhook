@@ -3,21 +3,23 @@ import requests
 
 app = Flask(__name__)
 
-AIRTABLE_API_KEY = "patELEdV0LAx6Aba3.393bf0e41eb59b4b80de15b94a3d122eab50035c7c34189b53ec561de590dff3"  # Replace with your API Key - store in environment variables for security.
-AIRTABLE_BASE_ID = "app5s8zl7DsUaDmtx"  # Replace with your Base ID - store in environment variables for security.
-AIRTABLE_TABLE_NAME = "landing_page_details"  # Table Name - store in environment variables for security.
+# Airtable Credentials (Move to environment variables for security)
+AIRTABLE_API_KEY = "patELEdV0LAx6Aba3.393bf0e41eb59b4b80de15b94a3d122eab50035c7c34189b53ec561de590dff3"
+AIRTABLE_BASE_ID = "app5s8zl7DsUaDmtx"
+AIRTABLE_TABLE_NAME = "landing_page_details"
 AIRTABLE_URL = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_NAME}"
 
-# 🔹 Function to save email in Airtable
-def save_to_airtable(email):
-    """Saves the given email to Airtable."""
+# 🔹 Function to save First Name & Phone to Airtable
+def save_to_airtable(first_name, phone):
+    """Saves first name and phone number to Airtable."""
     headers = {
         "Authorization": f"Bearer {AIRTABLE_API_KEY}",
         "Content-Type": "application/json"
     }
     data = {
         "fields": {
-            "email": email  # Ensure this matches the field name in Airtable
+            "name": first_name,  # Ensure this matches the Airtable field name
+            "phone": phone       # Ensure this matches the Airtable field name
         }
     }
     try:
@@ -29,7 +31,7 @@ def save_to_airtable(email):
         return {"error": str(e)}
 
 # 🔹 API Route to Receive Form Data
-@app.route("/submit", methods=["GET", "POST"])
+@app.route("/submit", methods=["POST"])
 def receive_form_data():
     try:
         print(f"Request method: {request.method}")  
@@ -42,21 +44,23 @@ def receive_form_data():
         if not data:
             return jsonify({"error": "No data received"}), 400
 
-        # Extract email from nested JSON
-        email = data.get("data", {}).get("contact", {}).get("email")
+        # Extract first name & phone from JSON
+        contact_info = data.get("data", {}).get("contact", {})
+        first_name = contact_info.get("first_name")  # Assuming the key is "first_name"
+        phone = contact_info.get("phone")  # Assuming the key is "phone"
 
-        if not email:
-            return jsonify({"error": "Email is required"}), 400  
+        # Validate required fields
+        if not first_name or not phone:
+            return jsonify({"error": "First Name and Phone are required"}), 400  
 
-        # Store email in Airtable
-        response = save_to_airtable(email)
+        # Store data in Airtable
+        response = save_to_airtable(first_name, phone)
 
-        return jsonify({"message": "Email saved successfully", "airtable_response": response}), 200  
+        return jsonify({"message": "Data saved successfully", "airtable_response": response}), 200  
 
     except Exception as e:
         print(f"Error processing request: {e}")  
         return jsonify({"error": str(e)}), 500  
-
 
 if __name__ == '__main__':
     app.run(debug=True)  # ✅ Start Flask in debug mode
