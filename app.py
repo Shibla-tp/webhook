@@ -18,7 +18,7 @@ def save_to_airtable(email):
     }
     data = {
         "fields": {
-            "Email": email  # The field in Airtable to store the email.  Make sure this matches your Airtable column name exactly.
+            "email": email  # The field in Airtable to store the email.  Make sure this matches your Airtable column name exactly.
         }
     }
     try:
