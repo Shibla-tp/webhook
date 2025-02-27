@@ -1,4 +1,6 @@
-from flask import Flask, request, jsonify
+
+
+from flask import Flask
 import requests
 
 app = Flask(__name__)
@@ -24,7 +26,7 @@ def save_to_airtable(email):
     return response.json()
 
 # 🔹 API Route to Receive Form Data
-@app.route("/submit", methods=["POST"])  # POST request for form submission
+@app.route("/submit", methods=["POST"])
 def receive_form_data():
     try:
         data = request.json  # Expecting JSON data from Systeme.io
